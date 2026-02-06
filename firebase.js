@@ -8,7 +8,7 @@ import { getStorage } from 'firebase/storage';
 // Replace these values with your actual Firebase project credentials
 // Get these from: Firebase Console > Project Settings > General > Your apps
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "your-api-key-here",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "56abe8c88c0cdb674e099cc2f4b7b7cc",
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "your-project-id.firebaseapp.com",
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "your-project-id",
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "your-project-id.appspot.com",
