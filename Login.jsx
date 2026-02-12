@@ -1,108 +1,62 @@
-// Login Component
 import React, { useState } from 'react';
-import { signIn, signInWithGoogle } from './authService';
+import { useAuth } from '../context/AuthContext';
 
-const Login = ({ onSwitchToSignup }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isSignup, setIsSignup] = useState(false);
+  const { login, signup } = useAuth();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    const result = await signIn(email, password);
-
-    if (result.success) {
-      // User is signed in, navigation handled by auth state listener
-      console.log('Signed in:', result.user);
+  const handleSubmit = () => {
+    if (isSignup) {
+      signup(email, password);
     } else {
-      setError(result.message);
+      login(email, password);
     }
-
-    setLoading(false);
-  };
-
-  const handleGoogleSignIn = async () => {
-    setError('');
-    setLoading(true);
-
-    const result = await signInWithGoogle();
-
-    if (result.success) {
-      console.log('Signed in with Google:', result.user);
-    } else {
-      setError(result.message);
-    }
-
-    setLoading(false);
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Sign In</h2>
-
-        {error && <div className="error-message">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
+    <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-red-600 mb-2">NETFLIX</h1>
+          <p className="text-gray-400">Unlimited movies, TV shows, and more</p>
+        </div>
+        
+        <div className="bg-black bg-opacity-70 border border-gray-800 rounded-lg p-8">
+          <h2 className="text-2xl font-semibold mb-6">
+            {isSignup ? 'Sign Up' : 'Sign In'}
+          </h2>
+          <div className="space-y-4">
             <input
               type="email"
-              id="email"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="Enter your email"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-white"
             />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
             <input
               type="password"
-              id="password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Enter your password"
-              minLength={6}
+              onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-white"
             />
+            <button
+              onClick={handleSubmit}
+              className="w-full py-3 bg-red-600 hover:bg-red-700 rounded font-semibold transition"
+            >
+              {isSignup ? 'Sign Up' : 'Sign In'}
+            </button>
+            <button
+              onClick={() => setIsSignup(!isSignup)}
+              className="w-full py-3 bg-gray-800 hover:bg-gray-700 rounded font-semibold transition"
+            >
+              {isSignup ? 'Already have an account? Sign In' : 'New to Netflix? Sign Up'}
+            </button>
           </div>
-
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-
-        <div className="divider">
-          <span>OR</span>
         </div>
-
-        <button
-          type="button"
-          className="btn-google"
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-        >
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-            width="18"
-            height="18"
-          />
-          Sign in with Google
-        </button>
-
-        <p className="auth-switch">
-          Don't have an account?{' '}
-          <button type="button" onClick={onSwitchToSignup} className="link-button">
-            Sign up
-          </button>
-        </p>
       </div>
     </div>
   );
