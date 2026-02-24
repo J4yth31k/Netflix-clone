@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Play } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
@@ -16,21 +17,18 @@ const Home = () => {
   const [contentData, setContentData] = useState(mockContentData);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const MOCK_WATCHLIST_KEY = 'netflix_watchlist';
 
   useEffect(() => {
-    const savedWatchlist = localStorage.getItem(MOCK_WATCHLIST_KEY);
-    if (savedWatchlist) setWatchlist(JSON.parse(savedWatchlist));
+    const saved = localStorage.getItem('netflix_watchlist');
+    if (saved) setWatchlist(JSON.parse(saved));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(MOCK_WATCHLIST_KEY, JSON.stringify(watchlist));
+    localStorage.setItem('netflix_watchlist', JSON.stringify(watchlist));
   }, [watchlist]);
 
   useEffect(() => {
-    if (tmdbApiKey) {
-      loadTmdbContent();
-    }
+    if (tmdbApiKey) loadTmdbContent();
   }, [tmdbApiKey]);
 
   const loadTmdbContent = async () => {
@@ -41,58 +39,36 @@ const Home = () => {
         tmdbService.getGenreMovies(tmdbApiKey, 28),
         tmdbService.getGenreMovies(tmdbApiKey, 35)
       ]);
-
-      const formatContent = (items) => items.results.slice(0, 10).map(item => ({
+      const fmt = (items) => items.results.slice(0, 10).map(item => ({
         id: item.id,
         title: item.title || item.name,
         genre: item.media_type || 'movie',
         rating: `${Math.round(item.vote_average * 10)}%`,
-        image: item.backdrop_path ? `${TMDB_IMAGE_BASE}${item.backdrop_path}` : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=225&fit=crop',
+        image: item.backdrop_path ? `${TMDB_IMAGE_BASE}${item.backdrop_path}` : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&h=450&fit=crop',
         description: item.overview || 'No description available.'
       }));
-
-      setContentData({
-        trending: formatContent(trending),
-        action: formatContent(action),
-        comedy: formatContent(comedy)
-      });
-    } catch (error) {
-      console.error('Failed to load TMDB content:', error);
+      setContentData({ trending: fmt(trending), action: fmt(action), comedy: fmt(comedy) });
+    } catch (e) {
+      console.error('Failed to load TMDB content:', e);
     } finally {
       setIsLoadingContent(false);
     }
   };
 
   const addToWatchlist = (content) => {
-    if (!watchlist.find(item => item.id === content.id)) {
-      setWatchlist([...watchlist, content]);
-    }
+    if (!watchlist.find(i => i.id === content.id)) setWatchlist([...watchlist, content]);
   };
-
-  const removeFromWatchlist = (contentId) => {
-    setWatchlist(watchlist.filter(item => item.id !== contentId));
-  };
-
-  const isInWatchlist = (contentId) => {
-    return watchlist.some(item => item.id === contentId);
-  };
+  const removeFromWatchlist = (id) => setWatchlist(watchlist.filter(i => i.id !== id));
+  const isInWatchlist = (id) => watchlist.some(i => i.id === id);
 
   const allContent = [...contentData.trending, ...contentData.action, ...contentData.comedy];
   const filteredContent = searchQuery
-    ? allContent.filter(item => 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.genre.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? allContent.filter(i => i.title.toLowerCase().includes(searchQuery.toLowerCase()) || i.genre.toLowerCase().includes(searchQuery.toLowerCase()))
     : null;
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Header 
-        searchQuery={searchQuery} 
-        setSearchQuery={setSearchQuery}
-        onOpenSettings={() => setSettingsOpen(true)}
-      />
-      
+      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} onOpenSettings={() => setSettingsOpen(true)} />
       <Hero content={contentData.trending[0]} onAddToList={addToWatchlist} />
 
       <div className="relative -mt-32 z-10">
@@ -102,41 +78,32 @@ const Home = () => {
               <p className="text-yellow-200 font-semibold">Using mock data</p>
               <p className="text-sm text-yellow-300">Add your TMDB API key to fetch real movies and TV shows</p>
             </div>
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded transition"
-            >
-              Add API Key
-            </button>
+            <button onClick={() => setSettingsOpen(true)} className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded transition">Add API Key</button>
           </div>
         )}
 
-        {isLoadingContent && (
-          <div className="text-center py-12">
-            <p className="text-gray-400">Loading content from TMDB...</p>
-          </div>
-        )}
+        {isLoadingContent && <div className="text-center py-12"><p className="text-gray-400">Loading content from TMDB...</p></div>}
 
         {searchQuery ? (
           <div className="px-4 md:px-12 py-8">
             <h3 className="text-2xl font-semibold mb-6">Search Results</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredContent.map(item => (
-                <div
-                  key={item.id}
-                  className="cursor-pointer group"
-                  onClick={() => setSelectedContent(item)}
-                >
-                  <div className="relative rounded overflow-hidden">
-                    <img src={item.image} alt={item.title} className="w-full h-48 object-cover group-hover:scale-110 transition-transform" />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity flex items-center justify-center">
-                      <Play className="w-12 h-12 opacity-0 group-hover:opacity-100 transition-opacity" fill="white" />
+            {filteredContent.length === 0 ? (
+              <p className="text-gray-400">No results found for "{searchQuery}"</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredContent.map(item => (
+                  <div key={item.id} className="cursor-pointer group" onClick={() => setSelectedContent(item)}>
+                    <div className="relative rounded overflow-hidden">
+                      <img src={item.image} alt={item.title} className="w-full h-48 object-cover group-hover:scale-110 transition-transform" />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity flex items-center justify-center">
+                        <Play className="w-12 h-12 opacity-0 group-hover:opacity-100 transition-opacity" fill="white" />
+                      </div>
                     </div>
+                    <h4 className="mt-2 font-semibold">{item.title}</h4>
                   </div>
-                  <h4 className="mt-2 font-semibold">{item.title}</h4>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -148,18 +115,10 @@ const Home = () => {
         )}
       </div>
 
-      <ContentModal
-        content={selectedContent}
-        onClose={() => setSelectedContent(null)}
+      <ContentModal content={selectedContent} onClose={() => setSelectedContent(null)}
         isInWatchlist={selectedContent ? isInWatchlist(selectedContent.id) : false}
-        onAddToList={addToWatchlist}
-        onRemoveFromList={removeFromWatchlist}
-      />
-
-      <SettingsModal 
-        isOpen={settingsOpen} 
-        onClose={() => setSettingsOpen(false)} 
-      />
+        onAddToList={addToWatchlist} onRemoveFromList={removeFromWatchlist} />
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 };
