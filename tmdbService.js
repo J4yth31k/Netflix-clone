@@ -6,14 +6,6 @@ export const tmdbService = {
     const res = await fetch(`${TMDB_BASE_URL}/trending/all/week?api_key=${apiKey}`);
     return res.json();
   },
-  getPopular: async (apiKey, type = 'movie') => {
-    const res = await fetch(`${TMDB_BASE_URL}/${type}/popular?api_key=${apiKey}`);
-    return res.json();
-  },
-  getTopRated: async (apiKey, type = 'movie') => {
-    const res = await fetch(`${TMDB_BASE_URL}/${type}/top_rated?api_key=${apiKey}`);
-    return res.json();
-  },
   getGenreMovies: async (apiKey, genreId) => {
     const res = await fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${apiKey}&with_genres=${genreId}`);
     return res.json();
