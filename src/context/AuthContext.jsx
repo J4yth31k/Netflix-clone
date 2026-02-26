@@ -3,7 +3,7 @@ const AuthContext = createContext();
 export const useAuth = () => { const context = useContext(AuthContext); if (!context) throw new Error('useAuth must be used within AuthProvider'); return context; };
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [tmdbApiKey, setTmdbApiKey] = useState('');
+  const [tmdbApiKey, setTmdbApiKey] = useState('56abe8c88c0cdb674e099cc2f4b7b7cc');
   useEffect(() => {
     const savedUser = localStorage.getItem('netflix_user');
     const savedKey = localStorage.getItem('netflix_tmdb_key');
